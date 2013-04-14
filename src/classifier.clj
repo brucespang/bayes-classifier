@@ -2,6 +2,8 @@
   (use [common])
   (require [clojure.string :as str]))
 
+;; We concatenate the alphabet to the input words, to prevent overfitting due to
+;; missing letters
 (def alphabet (map (comp str char) (range (int \A) (int \Z))))
 
 (defn compute-priors [words]
