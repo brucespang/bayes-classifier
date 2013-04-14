@@ -1,5 +1,7 @@
 # Naive Bayes Classifier
 
+Example output is in `./output.txt`
+
 ## Running
 
 To run the three trials and see the accuracy and classification data for each, run `./classify.sh`
