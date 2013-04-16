@@ -7,7 +7,7 @@
 (def alphabet (map (comp str char) (range (int \A) (int \Z))))
 
 (defn compute-priors [corpus]
-  (let [total (map-total corpus)]
+  (let [total (map-sum-count corpus)]
     (map-map (fn [[class words]]
                [class (/ (count words) total)])
              corpus)))
@@ -17,7 +17,7 @@
         letter-occurances (group-by id
                                     (mapcat (comp distinct split)
                                             words))
-        total (map-total letter-occurances)]
+        total (map-sum-count letter-occurances)]
     (map-map (fn [[letter occurances]]
                [letter (/ (count occurances) total)])
              letter-occurances)))

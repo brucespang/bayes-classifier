@@ -15,7 +15,7 @@
   (filter (comp not str/blank?)
           (str/split string #"")))
 
-(defn map-total [m]
+(defn map-sum-count [m]
   (sum (map (comp count second) m)))
 
 (defn max-by [f xs]
