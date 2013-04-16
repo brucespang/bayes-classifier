@@ -15,9 +15,6 @@
   (filter (comp not str/blank?)
           (str/split string #"")))
 
-(defn map-sum-count [m]
-  (sum (map (comp count second) m)))
-
 (defn max-by [f xs]
   (reduce (fn [acc x]
             (if (> (f acc) (f x))
@@ -33,7 +30,3 @@
   (nth xs 2))
 (defn fourth [xs]
   (nth xs 3))
-
-(defn map-map [f m]
-  (apply hash-map
-         (mapcat f m)))

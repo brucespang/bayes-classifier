@@ -1,5 +1,6 @@
 (ns classifier
-  (use [common])
+  (use [common]
+       [clojure.algo.generic.functor])
   (require [clojure.string :as str]))
 
 ;; We concatenate the alphabet to the input words, to prevent overfitting due to
@@ -7,25 +8,23 @@
 (def alphabet (map (comp str char) (range (int \A) (int \Z))))
 
 (defn compute-priors [corpus]
-  (let [total (map-sum-count corpus)]
-    (map-map (fn [[class words]]
-               [class (/ (count words) total)])
-             corpus)))
+  (let [total (sum (map count (vals corpus)))]
+    (fmap (fn [words]
+            (/ (count words) total))
+          corpus)))
 
 (defn compute-letter-likelihoods [cities]
   (let [words (concat cities alphabet)
         letter-occurances (group-by id
                                     (mapcat (comp distinct split)
                                             words))
-        total (map-sum-count letter-occurances)]
-    (map-map (fn [[letter occurances]]
-               [letter (/ (count occurances) total)])
-             letter-occurances)))
+        total (sum (map count (vals letter-occurances)))]
+    (fmap (fn [occurances]
+            (/ (count occurances) total))
+          letter-occurances)))
 
 (defn compute-likelihoods [corpus]
-  (map-map (fn [[class words]]
-             [class (compute-letter-likelihoods words)])
-           corpus))
+  (fmap compute-letter-likelihoods corpus))
 
 (defn train [corpus]
   {:priors (compute-priors corpus)
@@ -34,9 +33,9 @@
 
 (defn word-probabilities [word model]
   (map (fn [letter]
-         [letter (map-map (fn [[class letter-likelihoods]]
-                            [class (or (letter-likelihoods letter) 0)])
-                          (:likelihoods model))])
+         [letter (fmap (fn [letter-likelihoods]
+                         (or (letter-likelihoods letter) 0))
+                       (:likelihoods model))])
        (split word)))
 
 (defn joint-probabilities [word-probabilities model]
