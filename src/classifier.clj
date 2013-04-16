@@ -9,8 +9,7 @@
 
 (defn compute-priors [corpus]
   (let [total (sum (map count (vals corpus)))]
-    (fmap (fn [words]
-            (/ (count words) total))
+    (fmap #(/ (count %) total)
           corpus)))
 
 (defn compute-letter-likelihoods [cities]
@@ -19,8 +18,7 @@
                                     (mapcat (comp distinct split)
                                             words))
         total (sum (map count (vals letter-occurances)))]
-    (fmap (fn [occurances]
-            (/ (count occurances) total))
+    (fmap #(/ (count %) total)
           letter-occurances)))
 
 (defn compute-likelihoods [corpus]
@@ -34,7 +32,7 @@
 (defn word-probabilities [word model]
   (map (fn [letter]
          [letter (fmap (fn [letter-likelihoods]
-                         (or (letter-likelihoods letter) 0))
+                         (or (get letter-likelihoods letter) 0))
                        (:likelihoods model))])
        (split word)))
 
