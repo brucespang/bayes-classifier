@@ -30,3 +30,6 @@
   (nth xs 2))
 (defn fourth [xs]
   (nth xs 3))
+
+(defn char-range [from to]
+  (map (comp str char) (range (int from) (int to))))

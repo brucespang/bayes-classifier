@@ -5,53 +5,54 @@
 
 ;; We concatenate the alphabet to the input words, to prevent overfitting due to
 ;; missing letters
-(def alphabet (map (comp str char) (range (int \A) (int \Z))))
+(def ^:private alphabet (char-range \A \Z))
 
-(defn compute-priors [corpus]
-  (let [total (sum (map count (vals corpus)))]
+(defn- map-uniform-probability [m]
+  (let [total (sum (map count (vals m)))]
     (fmap #(/ (count %) total)
-          corpus)))
+          m)))
 
-(defn compute-letter-likelihoods [cities]
+(defn- compute-priors [corpus]
+  (map-uniform-probability corpus))
+
+(defn- compute-letter-likelihoods [cities]
   (let [words (concat cities alphabet)
         letter-occurances (group-by id
                                     (mapcat (comp distinct split)
-                                            words))
-        total (sum (map count (vals letter-occurances)))]
-    (fmap #(/ (count %) total)
-          letter-occurances)))
+                                            words))]
+    (map-uniform-probability letter-occurances)))
 
-(defn compute-likelihoods [corpus]
+(defn- compute-likelihoods [corpus]
   (fmap compute-letter-likelihoods corpus))
+
+(defn- letter-probabilities [word model]
+  (map (fn [letter]
+         [letter (fmap #(get % letter 0)
+                       (:likelihoods model))])
+       (split word)))
+
+(defn- joint-probabilities [letter-probabilities model]
+  (apply hash-map
+         (mapcat (fn [class]
+                   [class (product (map (fn [[_ probabilities]]
+                                          (get probabilities class))
+                                        letter-probabilities)
+                                   (get (:priors model) class))])
+                 (:classes model))))
 
 (defn train [corpus]
   {:priors (compute-priors corpus)
    :likelihoods (compute-likelihoods corpus)
-   :classes (map first corpus)})
-
-(defn word-probabilities [word model]
-  (map (fn [letter]
-         [letter (fmap (fn [letter-likelihoods]
-                         (or (get letter-likelihoods letter) 0))
-                       (:likelihoods model))])
-       (split word)))
-
-(defn joint-probabilities [word-probabilities model]
-  (map (fn [class]
-         [class (product (map (fn [[letter probabilities]]
-                                (get probabilities class))
-                              word-probabilities)
-                         (get (:priors model) class))])
-       (:classes model)))
+   :classes (keys corpus)})
 
 (defn classify [string model]
-  (let [word-probabilities (word-probabilities string model)
-        joint-probabilities (joint-probabilities word-probabilities model)
-        denominator (sum (map second joint-probabilities))
-        probabilities (map (fn [[class x]]
+  (let [letter-probs (letter-probabilities string model)
+        joint-probs (joint-probabilities letter-probs model)
+        denom (sum (vals joint-probs))
+        probs (map (fn [[class joint-prob]]
                              {:city string
                               :map-class class
-                              :probability (/ x denominator)})
-                           joint-probabilities)]
+                              :probability (/ joint-prob denom)})
+                           joint-probs)]
     (max-by :probability
-            probabilities)))
+            probs)))
