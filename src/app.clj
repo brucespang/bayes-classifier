@@ -17,17 +17,17 @@
        (count classifications))))
 
 (defn run-classifier [class model]
-  (let [fields [:city, :map-class, :probability]
-        results (classify-all class model)
+  (let [results (classify-all class model)
         accuracy (compute-accuracy results (:name class))]
     (str/join "\n" (concat
                     [(format "%s" (:name class))
                      (format "accuracy: %.2f"  (float accuracy))
-                     (str/join "," (map name fields))]
+                     "city,map-class,probability"]
                     (map (fn [res]
-                           (str/join "," (map (fn [field]
-                                                (field res))
-                                              fields)))
+                           (format "%s,%s,%.4f"
+                                   (:city res)
+                                   (:map-class res)
+                                   (float (:probability res)))                     )
                          results)))))
 
 (defn load-class [class data]

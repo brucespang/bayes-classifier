@@ -28,9 +28,9 @@
            corpus))
 
 (defn train [corpus]
-  (let [priors (compute-priors corpus)
-        likelihoods (compute-likelihoods corpus)]
-    {:priors priors :likelihoods likelihoods :classes (map first corpus)}))
+  {:priors (compute-priors corpus)
+   :likelihoods (compute-likelihoods corpus)
+   :classes (map first corpus)})
 
 (defn word-probabilities [word model]
   (map (fn [letter]
@@ -39,23 +39,22 @@
                           (:likelihoods model))])
        (split word)))
 
-(defn class-probabilities [word-probabilities model]
+(defn joint-probabilities [word-probabilities model]
   (map (fn [class]
-         [class (float (* (product
-                           (map (fn [[letter probabilities]]
-                                  (probabilities class))
-                                word-probabilities))
-                          ((:priors model) class)))])
+         [class (product (map (fn [[letter probabilities]]
+                                (get probabilities class))
+                              word-probabilities)
+                         (get (:priors model) class))])
        (:classes model)))
 
 (defn classify [string model]
   (let [word-probabilities (word-probabilities string model)
-        class-probabilities (class-probabilities word-probabilities model)
-        denominator (sum (map second class-probabilities))
+        joint-probabilities (joint-probabilities word-probabilities model)
+        denominator (sum (map second joint-probabilities))
         probabilities (map (fn [[class x]]
                              {:city string
                               :map-class class
                               :probability (/ x denominator)})
-                           class-probabilities)]
+                           joint-probabilities)]
     (max-by :probability
             probabilities)))

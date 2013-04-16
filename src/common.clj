@@ -8,8 +8,8 @@
 (defn sum [xs]
   (reduce + 0 xs))
 
-(defn product [xs]
-  (reduce * 1 xs))
+(defn product [& xs]
+  (reduce * 1 (flatten xs)))
 
 (defn split [string]
   (filter (comp not str/blank?)
