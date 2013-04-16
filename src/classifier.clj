@@ -50,9 +50,8 @@
         joint-probs (joint-probabilities letter-probs model)
         denom (sum (vals joint-probs))
         probs (map (fn [[class joint-prob]]
-                             {:city string
-                              :map-class class
-                              :probability (/ joint-prob denom)})
-                           joint-probs)]
-    (max-by :probability
-            probs)))
+                     {:city string
+                      :map-class class
+                      :probability (/ joint-prob denom)})
+                   joint-probs)]
+    (max-by :probability probs)))
