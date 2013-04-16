@@ -46,7 +46,7 @@
                    ["-se" "--second-eval" "Evaluation data for second class"])]
     (if (not (empty? (first input)))
       (let [data (first input)
-            firt (load-class :first data)
+            first (load-class :first data)
             second (load-class :second data)
             model (train {(:name first) (:training first)
                           (:name second) (:training second)})]

@@ -6,9 +6,8 @@
 ;; missing letters
 (def alphabet (map (comp str char) (range (int \A) (int \Z))))
 
-(defn compute-priors [words]
-  (let [corpus (concat words alphabet)
-        total (map-total corpus)]
+(defn compute-priors [corpus]
+  (let [total (map-total corpus)]
     (apply hash-map
            (mapcat (fn [[class words]]
                      [class (/ (count words) total)])
