@@ -33,3 +33,7 @@
   (nth xs 2))
 (defn fourth [xs]
   (nth xs 3))
+
+(defn map-map [f m]
+  (apply hash-map
+         (mapcat f m)))

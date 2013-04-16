@@ -8,10 +8,9 @@
 
 (defn compute-priors [corpus]
   (let [total (map-total corpus)]
-    (apply hash-map
-           (mapcat (fn [[class words]]
-                     [class (/ (count words) total)])
-                   corpus))))
+    (map-map (fn [[class words]]
+               [class (/ (count words) total)])
+             corpus)))
 
 (defn compute-letter-likelihoods [cities]
   (let [words (concat cities alphabet)
@@ -19,16 +18,14 @@
                                     (mapcat (comp distinct split)
                                             words))
         total (map-total letter-occurances)]
-    (apply hash-map
-           (mapcat (fn [[letter occurances]]
-                     [letter (/ (count occurances) total)])
-                   letter-occurances))))
+    (map-map (fn [[letter occurances]]
+               [letter (/ (count occurances) total)])
+             letter-occurances)))
 
 (defn compute-likelihoods [corpus]
-  (apply hash-map
-         (mapcat (fn [[class words]]
-                   [class (compute-letter-likelihoods words)])
-                 corpus)))
+  (map-map (fn [[class words]]
+             [class (compute-letter-likelihoods words)])
+           corpus))
 
 (defn train [corpus]
   (let [priors (compute-priors corpus)
@@ -37,11 +34,9 @@
 
 (defn word-probabilities [word model]
   (map (fn [letter]
-         [letter
-          (apply hash-map
-                 (mapcat (fn [[class letter-likelihoods]]
-                           [class (or (letter-likelihoods letter) 0)])
-                         (:likelihoods model)))])
+         [letter (map-map (fn [[class letter-likelihoods]]
+                            [class (or (letter-likelihoods letter) 0)])
+                          (:likelihoods model))])
        (split word)))
 
 (defn class-probabilities [word-probabilities model]
